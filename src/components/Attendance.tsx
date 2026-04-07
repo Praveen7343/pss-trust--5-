@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Camera, CheckCircle2, AlertCircle, RefreshCw, ArrowLeft, Hash } from 'lucide-react';
 import { supabase } from '../supabaseClient';
-
+import * as faceapi from 'face-api.js';
 interface AttendanceProps {
   onBack: () => void;
 }
@@ -24,14 +24,8 @@ export default function Attendance({ onBack }: AttendanceProps) {
   useEffect(() => {
     const loadModels = async () => {
       try {
-        // ✅ CHANGED: from 'face-api.js' to '@vladmandic/face-api'
-        const faceapi = await import('@vladmandic/face-api');
         faceapiRef.current = faceapi;
-
-        // ✅ ADDED: Wait for TensorFlow backend to initialize
-        // This fixes the "Cannot read properties of undefined (reading 'backend')" error
         await faceapi.tf.ready();
-
         await Promise.all([
           faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
           faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
