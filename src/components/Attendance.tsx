@@ -56,6 +56,16 @@ export default function Attendance({ onBack }: AttendanceProps) {
     }
   };
 
+  // FIX: Start camera via useEffect AFTER step 2 renders the <video> element
+  // Previously used setTimeout(startVideo, 100) which is a race condition —
+  // React may not have mounted the video element in 100ms
+  useEffect(() => {
+    if (step === 2) {
+      startVideo();
+    }
+  }, [step]);
+
+  // Face detection polling — only runs on step 2 with live video frames
   useEffect(() => {
     let intervalId: any;
     if (step === 2 && isModelsLoaded && faceapiRef.current) {
@@ -84,8 +94,7 @@ export default function Attendance({ onBack }: AttendanceProps) {
         .single();
       if (fetchError) throw new Error('Student not found. Please check your SID.');
       setStudent(data);
-      setStep(2);
-      setTimeout(startVideo, 100);
+      setStep(2); // FIX: useEffect above will call startVideo() reliably after render
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -99,9 +108,10 @@ export default function Attendance({ onBack }: AttendanceProps) {
     setError(null);
     try {
       const faceapi = faceapiRef.current;
-      const detection = await faceapiRef.current
-        .detectSingleFace(videoRef.current, 
-          new faceapiRef.current.SsdMobilenetv1Options({ minConfidence: 0.3 })
+      const detection = await faceapi
+        .detectSingleFace(
+          videoRef.current,
+          new faceapi.SsdMobilenetv1Options({ minConfidence: 0.3 })
         )
         .withFaceLandmarks()
         .withFaceDescriptor();
@@ -124,14 +134,19 @@ export default function Attendance({ onBack }: AttendanceProps) {
         return;
       }
 
+      // FIX: Pass Float32Array directly — no Array.from() needed
+      // face-api.js euclideanDistance works correctly with Float32Array inputs
       const storedDescriptor = new Float32Array(storedFace.face_descriptor);
       const distance = faceapi.euclideanDistance(
-        Array.from(detection.descriptor),
-        Array.from(storedDescriptor)
+        detection.descriptor,
+        storedDescriptor
       );
 
-      if (distance > 0.5) {
-        setError('Face did not match. Please try again.');
+      // FIX: Changed threshold from 0.5 → 0.6
+      // 0.5 was too strict and rejected real matches under different lighting/angles.
+      // 0.6 is the standard recommended threshold for face-api.js ssdMobilenetv1.
+      if (distance > 0.6) {
+        setError(`Face did not match. Please try again. (distance: ${distance.toFixed(2)})`);
         setIsVerifying(false);
         return;
       }
@@ -222,7 +237,7 @@ export default function Attendance({ onBack }: AttendanceProps) {
                     className="w-full py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
                     {isVerifying ? <span>Verifying...</span> : <><Camera className="w-5 h-5" /><span>Mark Attendance</span></>}
                   </button>
-                  <button onClick={() => { stopVideo(); setStep(1); setError(null); }}
+                  <button onClick={() => { stopVideo(); setStep(1); setError(null); setFaceDetected(false); }}
                     className="w-full py-4 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all">
                     Back
                   </button>

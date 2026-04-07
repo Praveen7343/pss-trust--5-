@@ -30,7 +30,8 @@ export default function FaceRegistration({ studentId, onSuccess }: FaceRegistrat
           faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
         ]);
         setIsModelsLoaded(true);
-        startVideo(); // ← start camera after models load
+        // FIX: Don't call startVideo() here — let the useEffect below handle it
+        // after isModelsLoaded triggers a re-render and the video element is ready
       } catch (err) {
         setError('Failed to load face detection models. Please refresh the page.');
       }
@@ -38,6 +39,13 @@ export default function FaceRegistration({ studentId, onSuccess }: FaceRegistrat
     loadModels();
     return () => { stopVideo(); };
   }, []);
+
+  // FIX: Start camera only after models are loaded AND component is rendered
+  useEffect(() => {
+    if (isModelsLoaded) {
+      startVideo();
+    }
+  }, [isModelsLoaded]);
 
   const startVideo = () => {
     navigator.mediaDevices.getUserMedia({ video: {} })
@@ -55,11 +63,12 @@ export default function FaceRegistration({ studentId, onSuccess }: FaceRegistrat
     }
   };
 
+  // FIX: Added readyState === 4 guard so detection only runs on live frames
   useEffect(() => {
     let intervalId: any;
     if (isModelsLoaded && faceapiRef.current) {
       intervalId = setInterval(async () => {
-        if (videoRef.current) {
+        if (videoRef.current && videoRef.current.readyState === 4) {
           const detections = await faceapiRef.current
             .detectSingleFace(videoRef.current)
             .withFaceLandmarks()
@@ -73,6 +82,13 @@ export default function FaceRegistration({ studentId, onSuccess }: FaceRegistrat
 
   const captureFace = async () => {
     if (!videoRef.current || !isModelsLoaded || !faceapiRef.current) return;
+
+    // FIX: Guard against camera not being ready yet
+    if (videoRef.current.readyState < 4) {
+      setError('Camera not ready yet. Please wait a moment and try again.');
+      return;
+    }
+
     setIsCapturing(true);
     setError(null);
     try {
@@ -119,6 +135,7 @@ export default function FaceRegistration({ studentId, onSuccess }: FaceRegistrat
 
       if (updateError) throw updateError;
 
+      // FIX: Store as plain number array (JSON-serializable for Supabase)
       const descriptorArray = Array.from(detections.descriptor);
 
       const { error: descError } = await supabase
