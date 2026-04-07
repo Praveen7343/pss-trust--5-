@@ -67,7 +67,7 @@ export default function Attendance({ onBack }: AttendanceProps) {
             .withFaceDescriptor();
           setFaceDetected(!!detections);
         }
-      }, 1000);
+      }, 500);
     }
     return () => clearInterval(intervalId);
   }, [step, isModelsLoaded]);
@@ -99,8 +99,10 @@ export default function Attendance({ onBack }: AttendanceProps) {
     setError(null);
     try {
       const faceapi = faceapiRef.current;
-      const detection = await faceapi
-        .detectSingleFace(videoRef.current)
+      const detection = await faceapiRef.current
+        .detectSingleFace(videoRef.current, 
+          new faceapiRef.current.SsdMobilenetv1Options({ minConfidence: 0.3 })
+        )
         .withFaceLandmarks()
         .withFaceDescriptor();
 
