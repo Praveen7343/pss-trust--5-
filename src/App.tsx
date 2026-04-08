@@ -54,8 +54,8 @@ import { User } from '@supabase/supabase-js';
 
 import { CHAIRMAN_EMAIL } from './config';
 
-const PSS_LOGO = "https://v0-ngo-app-for-studies.vercel.app/images/pss-logo.png";
-const CHAIRMAN_PHOTO = "https://v0-ngo-app-for-studies.vercel.app/images/image.png";
+const PSS_LOGO = "https://wojpyqvcargyffkyxfln.supabase.co/storage/v1/object/public/shared-files/42cb9343-6c24-4522-8ac5-0c27336aff3c/a84f56a0-4104-45b1-8c19-e9d129a3f77f.jpg";
+const CHAIRMAN_PHOTO = "https://wojpyqvcargyffkyxfln.supabase.co/storage/v1/object/public/shared-files/42cb9343-6c24-4522-8ac5-0c27336aff3c/09572fd3-89d2-44ec-a9ad-be7ef63729bf.jpg";
 
 function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);

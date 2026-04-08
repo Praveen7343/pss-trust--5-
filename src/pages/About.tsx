@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 
-const TEAM_PHOTO = "https://v0-ngo-app-for-studies.vercel.app/images/trustees-group.png";
+const TEAM_PHOTO = "https://wojpyqvcargyffkyxfln.supabase.co/storage/v1/object/public/shared-files/42cb9343-6c24-4522-8ac5-0c27336aff3c/09572fd3-89d2-44ec-a9ad-be7ef63729bf.jpg";
 
 export default function About() {
   return (

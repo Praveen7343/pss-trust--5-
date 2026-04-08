@@ -4,7 +4,7 @@ import { ArrowLeft, Loader2, Lock } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { CHAIRMAN_EMAIL } from '../config';
-const PSS_LOGO = "https://v0-ngo-app-for-studies.vercel.app/images/pss-logo.png";
+const PSS_LOGO = "https://wojpyqvcargyffkyxfln.supabase.co/storage/v1/object/public/shared-files/42cb9343-6c24-4522-8ac5-0c27336aff3c/a84f56a0-4104-45b1-8c19-e9d129a3f77f.jpg";
 
 export default function AdminOtp() {
   const navigate = useNavigate();
